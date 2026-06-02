@@ -10,6 +10,8 @@ public abstract class Cell {
     protected int radius;
     protected boolean isActive;
 
+    // protected Organism organism (l'organisme a laquel appartient la cellule)
+
     public Cell(int x, int y, int energy, int radius) {
         this.x = x;
         this.y = y;
@@ -17,9 +19,10 @@ public abstract class Cell {
         this.radius = radius;
         this.age = 0;
         this.isActive = true;
+        // this.organism = null; (init de l'organism)
     }
 
-    public abstract void update(Object currentGrid);
+    public  void update(WorldMap currentGrid);
 
     public void ageOneStep() {
         this.age++;
@@ -34,6 +37,15 @@ public abstract class Cell {
         this.y = newY;
     }
 
+    /* 
+    public void setOrganism(Organism organism) {
+        this.organism = organism;
+    }
+    public Organism getOrganism() {
+        return organism;
+    }
+    */
+   
     //GETTERS & SETTERS
 
     public int getX() {
@@ -68,11 +80,11 @@ public abstract class Cell {
         this.energy = energy;
     }
 
-    public int setRadius() {
+    public int getRadius() {
         return radius;
     }
 
-    public void getRadius(int radius) {
+    public void setRadius(int radius) {
         this.radius = radius;
     }
 
@@ -93,6 +105,7 @@ public abstract class Cell {
                 ", age=" + age +
                 ", energy=" + energy +
                 ", active=" + isActive +
+                // ", organismId= + (organism != null ? organism.getId() : "null") + "
                 "}";
     }
 }
