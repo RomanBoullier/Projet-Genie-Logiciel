@@ -1,6 +1,6 @@
 package com.example.projetglcellule.model.cell;
 
-import com.example.projetglcellule.model.Map;
+import com.example.projetglcellule.model.Grid;
 import com.example.projetglcellule.model.Organism;
 
 public abstract class Cell {
@@ -23,7 +23,7 @@ public abstract class Cell {
     }
 
 
-    public abstract void update(Map currentGrid);
+    public abstract void update(Grid currentGrid);
 
     public void ageOneStep() {
         this.age++;

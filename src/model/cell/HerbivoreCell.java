@@ -1,6 +1,6 @@
 package com.example.projetglcellule.model.cell;
 
-import com.example.projetglcellule.model.Map;
+import com.example.projetglcellule.model.Grid;
 import com.example.projetglcellule.model.Directions;
 import com.example.projetglcellule.model.Position;
 
@@ -19,7 +19,7 @@ public class HerbivoreCell extends Cell {
     }
 
     @Override
-    public void update(Map currentGrid) {
+    public void update(Grid currentGrid) {
         // 1. Perte d'énergie de base liée au temps qui passe
         ageOneStep();
         setEnergy(getEnergy() - ENERGY_LOSS_PER_STEP);
@@ -61,7 +61,7 @@ public class HerbivoreCell extends Cell {
         }
     }
 
-    private void reproduce(Map currentGrid) {
+    private void reproduce(Grid currentGrid) {
         List<Position> emptyNeighbors = getEmptyNeighbors(currentGrid);
         if (!emptyNeighbors.isEmpty()) {
             Position spawnPos = emptyNeighbors.get(random.nextInt(emptyNeighbors.size()));
@@ -74,7 +74,7 @@ public class HerbivoreCell extends Cell {
         }
     }
 
-    private List<Position> getPlantsNearby(Map currentGrid) {
+    private List<Position> getPlantsNearby(Grid currentGrid) {
         List<Position> plants = new ArrayList<>();
 
         for (Directions dir : Directions.values()) {
@@ -96,7 +96,7 @@ public class HerbivoreCell extends Cell {
         return plants;
     }
 
-    private List<Position> getEmptyNeighbors(Map currentGrid) {
+    private List<Position> getEmptyNeighbors(Grid currentGrid) {
         List<Position> empty = new ArrayList<>();
 
         for (Directions dir : Directions.values()) {

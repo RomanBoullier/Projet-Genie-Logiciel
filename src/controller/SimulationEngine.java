@@ -1,6 +1,6 @@
 package com.example.projetglcellule.controller;
 
-import com.example.projetglcellule.model.Map;
+import com.example.projetglcellule.model.Grid;
 import com.example.projetglcellule.model.cell.AutotrophCell; // Ajuste le package selon ton arborescence
 import com.example.projetglcellule.model.cell.CarnivoreCell;
 import com.example.projetglcellule.model.cell.Cell;
@@ -18,7 +18,7 @@ public class SimulationEngine {
 
     public static void main(String[] args) {
         // 1. Initialisation de la grille via la console (Exigence du sujet)
-        Map map = Map.createFromUserInput();
+        Grid map = Grid.createFromUserInput();
         Scanner scanner = new Scanner(System.in);
 
         // 2. Placer aléatoirement des cellules de différents stypes au départ

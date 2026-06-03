@@ -1,7 +1,7 @@
 package com.example.projetglcellule.model.cell;
 
 import com.example.projetglcellule.model.Directions;
-import com.example.projetglcellule.model.Map;
+import com.example.projetglcellule.model.Grid;
 import com.example.projetglcellule.model.Position;
 
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ public class AutotrophCell extends Cell {
     }
 
     @Override
-    public void update(Map currentGrid) {
+    public void update(Grid currentGrid) {
         // 1. Vieillir et consommer l'énergie de base
         ageOneStep();
         if (!isActive()) {
@@ -36,7 +36,7 @@ public class AutotrophCell extends Cell {
         }
     }
 
-    private void reproduce(Map currentGrid) {
+    private void reproduce(Grid currentGrid) {
         List<Position> emptyNeighbors = getEmptyNeighbors(currentGrid);
 
         if (!emptyNeighbors.isEmpty()) {
@@ -56,7 +56,7 @@ public class AutotrophCell extends Cell {
     }
 
     // Récupère la liste des positions adjacentes (Nord, Sud, Est, Ouest) qui sont vides
-    private List<Position> getEmptyNeighbors(Map currentGrid) {
+    private List<Position> getEmptyNeighbors(Grid currentGrid) {
         List<Position> empty = new ArrayList<>();
 
         for (Directions dir : Directions.values()) {
