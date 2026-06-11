@@ -153,6 +153,23 @@ public class Grid {
         System.out.println();
     }
 
+    
+public Position getAdjustedPosition(int x, int y) {
+
+    if (topology == Topology.BOUNDED) {
+
+        if (x < 0 || x >= width || y < 0 || y >= height) {
+            return null;
+        }
+
+        return new Position(x, y);
+    }
+
+    int nx = (x + width) % width;
+    int ny = (y + height) % height;
+
+    return new Position(nx, ny);
+}
     public static Grid createFromUserInput() {
 
         Scanner scanner = new Scanner(System.in);
