@@ -1,15 +1,15 @@
-package com.example.projetglcellule;
+package com.example.projetglcellule.model;
+
+import com.example.projetglcellule.model.cell.AutotrophCell;
+import com.example.projetglcellule.model.cell.CarnivoreCell;
+import com.example.projetglcellule.model.cell.Cell;
+import com.example.projetglcellule.model.cell.HerbivoreCell;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+import java.util.Scanner;
 
 public class Grid {
-
-    // ---------------------------
-    // CONFIG
-    // ---------------------------
 
     private final int width;
     private final int height;
@@ -17,34 +17,9 @@ public class Grid {
 
     private final Topology topology;
 
-    // ---------------------------
-    // GRILLES (double buffer)
-    // ---------------------------
-
-    /**
-     * Etat courant : id organisme par cellule
-     */
-    private int[] currentGrid;
-
-    /**
-     * Etat suivant
-     */
-    private int[] nextGrid;
-
-    // ---------------------------
-    // DONNEES METIER
-    // ---------------------------
+    private final Cell[] cells;
 
     private final Map<Integer, Organism> organisms;
-
-    /**
-     * Cellules frontières (coordonnées packées en int)
-     */
-    private final Set<Integer> activeCells;
-
-    // ---------------------------
-    // INIT
-    // ---------------------------
 
     public Grid(int width, int height, Topology topology) {
 
@@ -53,188 +28,202 @@ public class Grid {
         this.size = width * height;
         this.topology = topology;
 
-        this.currentGrid = new int[size];
-        this.nextGrid = new int[size];
+        this.cells = new Cell[size];
 
         this.organisms = new HashMap<>();
-        this.activeCells = new HashSet<>();
     }
-
-    // ---------------------------
-    // INDEXING
-    // ---------------------------
 
     private int index(int x, int y) {
         return x + y * width;
     }
 
-    private int xOf(int index) {
-        return index % width;
-    }
-
-    private int yOf(int index) {
-        return index / width;
-    }
-
-    // ---------------------------
-    // WRAPPING
-    // ---------------------------
-
     private int wrapX(int x) {
-        if (topology == Topology.BOUNDED) return x;
+        if (topology == Topology.BOUNDED) {
+            return x;
+        }
         return (x + width) % width;
     }
 
     private int wrapY(int y) {
-        if (topology == Topology.BOUNDED) return y;
+        if (topology == Topology.BOUNDED) {
+            return y;
+        }
         return (y + height) % height;
     }
 
-    // ---------------------------
-    // ACCESS
-    // ---------------------------
-
-    public int getCell(int x, int y) {
+    public Cell getCell(int x, int y) {
 
         if (topology == Topology.BOUNDED) {
             if (x < 0 || x >= width || y < 0 || y >= height) {
-                return -1;
+                return null;
             }
         }
 
         x = wrapX(x);
         y = wrapY(y);
 
-        return currentGrid[index(x, y)];
+        return cells[index(x, y)];
     }
 
-    public void setCell(int x, int y, int organismId) {
-        currentGrid[index(x, y)] = organismId;
-        updateBoundaryAround(x, y);
+    public void setCell(int x, int y, Cell cell) {
+
+        if (topology == Topology.BOUNDED) {
+            if (x < 0 || x >= width || y < 0 || y >= height) {
+                return;
+            }
+        }
+
+        x = wrapX(x);
+        y = wrapY(y);
+
+        cells[index(x, y)] = cell;
+
+        if (cell != null) {
+            cell.setX(x);
+            cell.setY(y);
+        }
     }
 
-    // ---------------------------
-    // ORGANISMES
-    // ---------------------------
+    public void clearCell(int x, int y) {
+
+        if (topology == Topology.BOUNDED) {
+            if (x < 0 || x >= width || y < 0 || y >= height) {
+                return;
+            }
+        }
+
+        x = wrapX(x);
+        y = wrapY(y);
+
+        cells[index(x, y)] = null;
+    }
+
+    public boolean isEmpty(int x, int y) {
+        return getCell(x, y) == null;
+    }
 
     public void addOrganism(Organism organism) {
-
-        organisms.put(organism.getId(), organism);
-
-        Cell mother = organism.getMotherCell();
-
-        updateBoundaryAround(mother.getX(), mother.getY());
-    }
-
-    // ---------------------------
-    // FRONTIERES
-    // ---------------------------
-
-    public boolean isBoundary(int x, int y) {
-
-        int id = getCell(x, y);
-
-        if (id <= 0) return false;
-
-        for (Direction d : Direction.values()) {
-
-            int nx = wrapX(x + d.dx);
-            int ny = wrapY(y + d.dy);
-
-            int nid = getCell(nx, ny);
-
-            if (nid != id) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private int pack(int x, int y) {
-        return x << 16 | (y & 0xFFFF);
-    }
-
-    private int unpackX(int p) {
-        return p >>> 16;
-    }
-
-    private int unpackY(int p) {
-        return p & 0xFFFF;
-    }
-
-    private void refreshBoundary(int x, int y) {
-
-        int packed = pack(x, y);
-
-        if (isBoundary(x, y)) {
-            activeCells.add(packed);
-        } else {
-            activeCells.remove(packed);
+        if (organism != null) {
+            organisms.put(organism.getId(), organism);
         }
     }
-
-    private void updateBoundaryAround(int x, int y) {
-
-        refreshBoundary(x, y);
-
-        for (Direction d : Direction.values()) {
-            refreshBoundary(x + d.dx, y + d.dy);
-        }
-    }
-
-    // ---------------------------
-    // SIMULATION CORE
-    // ---------------------------
-
-    public void computeNextState() {
-
-        // On ne recopie PAS toute la grille :
-        // on travaille uniquement sur activeCells
-
-        for (int packed : activeCells) {
-
-            int x = unpackX(packed);
-            int y = unpackY(packed);
-
-            int id = getCell(x, y);
-
-            if (id <= 0) continue;
-
-            Organism org = organisms.get(id);
-
-            if (org != null) {
-
-                // logique biologique déléguée
-                org.updateCell(this, x, y, nextGrid);
-            }
-        }
-    }
-
-    // ---------------------------
-    // SWAP BUFFERS
-    // ---------------------------
-
-    public void swapBuffers() {
-
-        int[] tmp = currentGrid;
-        currentGrid = nextGrid;
-        nextGrid = tmp;
-
-        // reset partiel seulement (pas de réalloc obligatoire si tu veux optimiser encore)
-        for (int i = 0; i < size; i++) {
-            nextGrid[i] = 0;
-        }
-    }
-
-    // ---------------------------
-    // UTILITIES
-    // ---------------------------
-
-    public int width() { return width; }
-    public int height() { return height; }
 
     public Map<Integer, Organism> getOrganisms() {
         return organisms;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void display() {
+
+        System.out.println();
+
+        for (int y = 0; y < height; y++) {
+
+            for (int x = 0; x < width; x++) {
+
+                Cell cell = getCell(x, y);
+
+                if (cell == null) {
+                    System.out.print(". ");
+                }
+                else if (cell instanceof AutotrophCell) {
+                    System.out.print("A ");
+                }
+                else if (cell instanceof HerbivoreCell) {
+                    System.out.print("H ");
+                }
+                else if (cell instanceof CarnivoreCell) {
+                    System.out.print("C ");
+                }
+                else {
+                    System.out.print("? ");
+                }
+            }
+
+            System.out.println();
+        }
+
+        System.out.println();
+    }
+
+    public static Grid createFromUserInput() {
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("=== Configuration de la grille ===");
+
+        int width = 0;
+        while (true) {
+            try {
+                System.out.print("Largeur (entre 3 et 50) : ");
+                width = Integer.parseInt(scanner.nextLine().trim());
+
+                if (width >= 3 && width <= 50) {
+                    break;
+                }
+
+                System.out.println("Valeur invalide. Veuillez saisir un entier entre 3 et 50.");
+
+            } catch (NumberFormatException e) {
+                System.out.println("Saisie invalide. Veuillez entrer un entier.");
+            }
+        }
+
+        int height = 0;
+        while (true) {
+            try {
+                System.out.print("Hauteur (entre 3 et 50) : ");
+                height = Integer.parseInt(scanner.nextLine().trim());
+
+                if (height >= 3 && height <= 50) {
+                    break;
+                }
+
+                System.out.println("Valeur invalide. Veuillez saisir un entier entre 3 et 50.");
+
+            } catch (NumberFormatException e) {
+                System.out.println("Saisie invalide. Veuillez entrer un entier.");
+            }
+        }
+
+        Topology topology;
+
+        while (true) {
+
+            System.out.print("Topologie (BOUNDED / TOROIDAL) : ");
+
+            String choice = scanner.nextLine().trim().toUpperCase();
+
+            if (choice.equals("BOUNDED")) {
+                topology = Topology.BOUNDED;
+                break;
+            }
+            else if (choice.equals("TOROIDAL")) {
+                topology = Topology.TOROIDAL;
+                break;
+            }
+            else {
+                System.out.println("Topologie invalide. Entrez BOUNDED ou TOROIDAL.");
+            }
+        }
+
+        System.out.println(
+                "Grille créée : "
+                        + width
+                        + " x "
+                        + height
+                        + " avec topologie "
+                        + topology
+                        + "."
+        );
+
+        return new Grid(width, height, topology);
     }
 }
