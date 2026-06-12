@@ -52,16 +52,35 @@ public class SimulationEngine {
 
         // 3. Boucle principale de simulation (CLI)
         while (true) {
-            String input = scanner.nextLine();
+            String input = scanner.nextLine().trim();
 
-            // Permet de quitter proprement la simulation
             if (input.equalsIgnoreCase("exit")) {
                 System.out.println("Simulation stopped.");
                 break;
             }
 
+            // NOUVELLE COMMANDE : SAUVEGARDER
+            if (input.equalsIgnoreCase("save")) {
+                SaveManager.saveGame(map); // On passe notre objet Grid actuel (nommé map ou grid chez toi)
+                System.out.println("Press ENTER to continue, or type another command.");
+                continue; // On saute la mise à jour pour ce tour, on ne fait que sauvegarder
+            }
+
+            // NOUVELLE COMMANDE : CHARGER
+            if (input.equalsIgnoreCase("load")) {
+                Grid loadedMap = SaveManager.loadGame();
+                if (loadedMap != null) {
+                    map = loadedMap; // On écrase l'ancienne grille par la nouvelle !
+                    System.out.println("\n--- Restored Grid State ---");
+                    map.display();
+                }
+                continue; // On attend la prochaine instruction de l'utilisateur
+            }
+
             step++;
             System.out.println("\n================ STEP " + step + " ================");
+
+            // ... Reste de ton code de simulation inchangé (Etape A, B, C, D) ...
 
             // Étape A : Collecter toutes les cellules vivantes AVANT les mises à jour.
             // On fait une liste séparée pour éviter que les nouveaux "bébés" créés durant ce tour
@@ -84,13 +103,17 @@ public class SimulationEngine {
                 }
             }
 
-            // Étape C : Nettoyer la grille des cellules mortes (énergie <= 0)
+            // Étape C : Nettoyer la grille des cellules mortes
             for (int y = 0; y < map.getHeight(); y++) {
                 for (int x = 0; x < map.getWidth(); x++) {
                     Cell cell = map.getCell(x, y);
                     if (cell != null && !cell.isActive()) {
                         map.clearCell(x, y);
-                        System.out.println("🌱 A cell died of exhaustion at (" + x + "," + y + ")");
+                        if (cell.getEnergy() <= 0) {
+                            System.out.println("💀 A cell died of starvation/exhaustion at (" + x + "," + y + ")");
+                        } else {
+                            System.out.println("👵 A cell died of old age (" + cell.getAge() + " steps) at (" + x + "," + y + ")");
+                        }
                     }
                 }
             }

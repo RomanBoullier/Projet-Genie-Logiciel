@@ -3,7 +3,9 @@ package com.example.projetglcellule.model.cell;
 import com.example.projetglcellule.model.Grid;
 import com.example.projetglcellule.model.Organism;
 
-public abstract class Cell {
+public abstract class Cell implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
+
     protected int x;
     protected int y;
     protected int age;
@@ -11,6 +13,8 @@ public abstract class Cell {
     protected int radius;
     protected boolean isActive;
     protected Organism organism;
+
+    private final java.util.Random cellRandom = new java.util.Random();
 
     public Cell(int x, int y, int energy, int radius) {
         this.x = x;
@@ -25,11 +29,18 @@ public abstract class Cell {
 
     public abstract void update(Grid currentGrid);
 
+
     public void ageOneStep() {
         this.age++;
-        this.energy--;
-        if (this.energy <= 0) {
-            this.isActive = false;
+
+        // À partir d'un certain âge (ex: 15 tours), la cellule a une chance de mourir de vieillesse
+        if (this.age > 15) {
+            // La probabilité augmente avec l'âge (ex: (âge - 15) * 5%)
+            double deathProbability = (this.age - 15) * 0.05;
+
+            if (cellRandom.nextDouble() < deathProbability) {
+                this.isActive = false; // Mort de vieillesse
+            }
         }
     }
 

@@ -9,7 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-public class Grid {
+public class Grid implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
 
     private final int width;
     private final int height;
