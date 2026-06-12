@@ -13,6 +13,7 @@ public abstract class Cell implements java.io.Serializable {
     protected int radius;
     protected boolean isActive;
     protected Organism organism;
+    private boolean hasPlayed = false;
 
     private final java.util.Random cellRandom = new java.util.Random();
 
@@ -70,6 +71,14 @@ public abstract class Cell implements java.io.Serializable {
     public void setRadius(int radius) { this.radius = radius; }
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { isActive = active; }
+
+    public boolean hasPlayed() {
+        return hasPlayed;
+    }
+
+    public void setHasPlayed(boolean hasPlayed) {
+        this.hasPlayed = hasPlayed;
+    }
 
     @Override
     public String toString() {

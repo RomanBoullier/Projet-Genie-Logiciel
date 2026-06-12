@@ -171,6 +171,18 @@ public Position getAdjustedPosition(int x, int y) {
 
     return new Position(nx, ny);
 }
+
+    /**
+     * Clears the entire grid by setting all cells to null.
+     */
+    public void clearAll() {
+        // Puisque le tableau est à une seule dimension, on le vide d'un coup !
+        java.util.Arrays.fill(this.cells, null);
+
+        // On vide aussi la liste des organismes pour éviter les fuites de données
+        this.organisms.clear();
+    }
+
     public static Grid createFromUserInput() {
 
         Scanner scanner = new Scanner(System.in);

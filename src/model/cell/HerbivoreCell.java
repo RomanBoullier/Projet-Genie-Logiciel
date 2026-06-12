@@ -20,17 +20,25 @@ public class HerbivoreCell extends Cell implements Movable, Consumable {
 
     @Override
     public void update(Grid currentGrid) {
+        // 1. Sécurité : Si elle a déjà joué ce tour-ci, on ne fait rien
+        if (hasPlayed()) return;
+
         ageOneStep();
         setEnergy(getEnergy() - ENERGY_LOSS_PER_STEP);
+
+        // Si la cellule est morte (vieillesse ou faim), on s'arrête là
         if (!isActive()) return;
 
-        // Délégation du déplacement à l'interface Movable
+        // 2. Exécution du comportement
         moveWithStrategy(currentGrid);
 
-        // Reproduction
+        // 3. Reproduction si assez d'énergie
         if (getEnergy() >= REPRODUCTION_THRESHOLD) {
             reproduce(currentGrid);
         }
+
+        // 4. On valide qu'elle a terminé son tour
+        setHasPlayed(true);
     }
 
     @Override
