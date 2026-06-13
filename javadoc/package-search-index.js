@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.example.projetglcellule.app"},{"l":"com.example.projetglcellule.controller"},{"l":"com.example.projetglcellule.model"},{"l":"com.example.projetglcellule.model.cell"}];updateSearchResults();
